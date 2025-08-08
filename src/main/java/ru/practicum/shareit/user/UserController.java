@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 @Slf4j
@@ -18,33 +19,35 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Collection<User> getListOfUsers() {
+    public Collection<UserDto> getListOfUsers() {
         log.info("Получен HTTP запрос на получение всех пользователей");
         return userService.getListOfUsers();
 
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUser(@PathVariable Long userId) {
+    public ResponseEntity<UserDto> getUser(@PathVariable Long userId) {
         log.info("Получен HTTP запрос на получение пользователя по id: {}", userId);
-        User user = userService.getUser(userId);
-        return ResponseEntity.ok(user);
+        return userService.getUser(userId)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найдена"));
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        log.info("Получен HTTP запрос на создание пользователя: {}", user);
-        return userService.createUser(user);
+    public UserDto createUser(@RequestBody UserDto userDto) {
+        log.info("Получен HTTP запрос на создание пользователя: {}", userDto);
+        return userService.createUser(userDto);
     }
 
-    @PatchMapping ("/{id}")
-    public User editUser(
+    @PatchMapping("/{id}")
+    public UserDto editUser(
             @PathVariable Long id,
-            @RequestBody User newUser
+            @RequestBody UserDto userDto
     ) {
-        log.info("Принят HTTP запрос на обновление пользователя: {}", newUser);
-        return userService.editUser(newUser, id);
+        log.info("HTTP PATCH /users/{} body={}", id, userDto);
+        return userService.editUser(userDto, id);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(

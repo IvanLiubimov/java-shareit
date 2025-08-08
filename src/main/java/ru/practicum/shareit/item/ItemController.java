@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -19,10 +19,9 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
 
     @GetMapping
-    public Collection<Item> getAllItems(
+    public Collection<ItemDto> getAllItems(
             @RequestHeader ("X-Sharer-User-Id") Long userId
     ) {
         log.info("Получен HTTP запрос вывод списка вещей");
@@ -30,12 +29,11 @@ public class ItemController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Item> getItemById(
-            @PathVariable Long id
-    ) {
+    public ResponseEntity<ItemDto> getItemById(@PathVariable Long id) {
         log.info("Получен HTTP запрос на получение вещи по id: {}", id);
-        Item item = itemService.getItemById(id);
-        return ResponseEntity.ok(item);
+        return itemService.getItemById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new NotFoundException("Вещь с id = " + id + " не найдена"));
     }
 
     @PostMapping
@@ -44,8 +42,7 @@ public class ItemController {
             @RequestHeader ("X-Sharer-User-Id") Long userId
     ) {
         log.info("Получен HTTP запрос на создание вещи: {}", itemDto);
-        Item item = itemService.createItem(itemDto, userId);
-        return itemMapper.toItemDto(item);
+        return itemService.createItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
@@ -55,8 +52,7 @@ public class ItemController {
             @RequestHeader ("X-Sharer-User-Id") Long userId
     ) {
         log.info("Получен HTTP запрос на обновление вещи: {}", itemDto);
-        Item item = itemService.editItem(itemId, itemDto, userId);
-        return itemMapper.toItemDto(item);
+        return itemService.editItem(itemId, itemDto, userId);
     }
 
     @GetMapping("/search")

@@ -3,20 +3,19 @@ package ru.practicum.shareit.item.storage;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class InMemoryItemStorage implements ItemStorage {
 
-    private Map<Long, Item> items = new HashMap<>();
+    private final Map<Long, Item> items = new HashMap<>();
 
     @Override
     public Collection<Item> getListOfItems(Long userId) {
@@ -26,23 +25,15 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Item createItem(ItemDto itemDto, User owner) {
-        Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(Boolean.TRUE.equals(itemDto.getAvailable()));
-        item.setOwner(owner);
-        item.setId(generateId());
-        items.put(item.getId(), item);
+    public Item createItem(Item item) {
+        Long itemId = generateId();
+        item.setId(itemId); // присваиваем id объекту
+        items.put(itemId, item);
         return item;
     }
 
     @Override
-    public Item updateItem(Long itemId, ItemDto itemDto, Long userId) {
-        Item item = items.get(itemId);
-        if (item == null || !item.getOwner().getId().equals(userId)) {
-            throw new NotFoundException("Вещь с id = " + itemDto.getId() + " не найдена или не принадлежит пользователю");
-        }
+    public Item updateItem(Item item, ItemDto itemDto) {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(Boolean.TRUE.equals(itemDto.getAvailable()));
@@ -50,17 +41,13 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Item getItemById(Long id) {
+    public Optional<Item> getItemById(Long id) {
         Item item = items.get(id);
-        return item;
+        return Optional.of(item);
     }
 
     @Override
     public Collection<Item> searchItem(String query, Long userId) {
-        if (query == null || query.isBlank()) {
-            throw new ConditionsNotMetException("Ваш запрос пуст");
-        }
-
         String lowerQuery = query.toLowerCase();
 
         return items.values().stream()
