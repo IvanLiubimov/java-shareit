@@ -3,6 +3,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Component
 public interface UserStorage {
@@ -13,7 +14,7 @@ public interface UserStorage {
 
     User updateUser(User user, Long id);
 
-    User getUserById(Long id);
+    Optional<User> getUserById(Long id);
 
     void deleteUser(Long id);
 

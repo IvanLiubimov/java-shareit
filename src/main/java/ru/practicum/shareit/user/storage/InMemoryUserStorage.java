@@ -9,12 +9,13 @@ import ru.practicum.shareit.user.model.User;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    private Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     public Collection<User> getListOfUsers() {
         return users.values();
@@ -34,44 +35,27 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User newUser, Long id) {
-        if (id == null) {
-            long newUserId = users.values().stream()
-                    .filter(user1 -> user1.getEmail().equals(newUser.getEmail()))
-                    .map(User::getId)
-                    .findFirst()
-                    .orElse(0L);
-            newUser.setId(newUserId);
-        }
-        if (users.containsKey(id)) {
-            log.trace("Пользователь найден");
-            User oldUser = users.get(id);
-
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setName(newUser.getName());
-
-            log.info("Успешно обработал HTTP запрос на обновление пользователя: {}", newUser);
-            return oldUser;
-
-        }
-        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
-    }
-
-
-    @Override
-    public User getUserById(Long id) {
-        User user = users.get(id);
-        if (user == null) {
+        if (!users.containsKey(id)) {
             throw new NotFoundException("Пользователь с id = " + id + " не найден");
         }
-        return user;
+
+        log.trace("Пользователь найден");
+        User oldUser = users.get(id);
+
+        if (newUser.getEmail() != null) {
+            oldUser.setEmail(newUser.getEmail());
+        }
+        if (newUser.getName() != null) {
+            oldUser.setName(newUser.getName());
+        }
+
+        log.info("Успешно обновил пользователя: {}", oldUser);
+        return oldUser;
     }
 
-    private boolean isEmailExists(User user) {
-        if (users.values().stream()
-                .anyMatch(user1 -> user1.getEmail().equals(user.getEmail()))) {
-            throw new ErrorHandler.ConflictException("Такой имеил уже есть у одного из пользователей");
-        }
-        return false;
+    @Override
+    public Optional<User> getUserById(Long id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     private long generateId() {
