@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 @RequiredArgsConstructor
 public class ItemValidator {
 
-    public void validate(ItemDto itemDto, Long userId) {
+    public void validate(ItemDto itemDto) {
 
         if (itemDto.getName() == null || itemDto.getName().isBlank()) {
             throw new ConditionsNotMetException("Имя вещи не может быть пустым");
@@ -23,21 +23,19 @@ public class ItemValidator {
         }
     }
 
-    public void validateForUpdate(Long itemId, ItemDto itemDto, Long userId) {
+    public void validateForUpdate(ItemDto itemDto) {
+        boolean hasValidName = itemDto.getName() != null && !itemDto.getName().isBlank();
+        boolean hasValidDescription = itemDto.getDescription() != null && !itemDto.getDescription().isBlank();
+        boolean hasAvailable = itemDto.getAvailable() != null;
 
-        boolean isNamePresent = itemDto.getName() != null && !itemDto.getName().isBlank();
-        boolean isDescriptionPresent = itemDto.getDescription() != null && !itemDto.getDescription().isBlank();
-        boolean isAvailablePresent = itemDto.getAvailable() != null;
-
-        if (!isNamePresent && !isDescriptionPresent && !isAvailablePresent) {
+        if (!hasValidName && !hasValidDescription && !hasAvailable) {
+            if (itemDto.getName() != null && itemDto.getName().isBlank()) {
+                throw new ConditionsNotMetException("Имя не может быть пустым");
+            }
+            if (itemDto.getDescription() != null && itemDto.getDescription().isBlank()) {
+                throw new ConditionsNotMetException("Описание не может быть пустым");
+            }
             throw new ConditionsNotMetException("Нужно указать хотя бы одно поле для обновления");
-        }
-
-        if (itemDto.getName() != null && itemDto.getName().isBlank()) {
-            throw new ConditionsNotMetException("Имя не может быть пустым");
-        }
-        if (itemDto.getDescription() != null && itemDto.getDescription().isBlank()) {
-            throw new ConditionsNotMetException("Описание не может быть пустым");
         }
     }
 }

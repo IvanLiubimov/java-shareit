@@ -10,7 +10,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,15 +24,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserDto> getUser(Long userId) {
-        Optional<User> user =  userStorage.getUserById(userId);
-        return Optional.of(UserMapper.toUserDto(user.get()));
+    public UserDto getUser(Long userId) {
+        User user = getUserIfExists(userId);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        if (isEmailExists(user)) {
+        if (userStorage.isEmailExists(user)) {
             throw new ErrorHandler.ConflictException("Email уже используется другим пользователем");
         }
         userValidator.validate(user);
@@ -44,40 +43,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto editUser(UserDto newUserDto, Long id) {
         User newUser = UserMapper.toUser(newUserDto);
-
-        // Проверка на существование
-        userStorage.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-
-        // Проверка уникальности email
-        if (newUser.getEmail() != null && isEmailExists(newUser)) {
+        getUserIfExists(id);
+        if (newUser.getEmail() != null && userStorage.isEmailExists(newUser)) {
             throw new ErrorHandler.ConflictException("Email уже используется другим пользователем");
         }
-
         userValidator.validateForPatch(newUser);
-
         User updatedUser = userStorage.updateUser(newUser, id);
-
         return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
     public void deleteUser(Long id) {
-        userStorage.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+        getUserIfExists(id);
         userStorage.deleteUser(id);
     }
 
-    public boolean isEmailExists(User user) {
-        if (user.getEmail() == null) {
-            return false;
-        }
-
-        return userStorage.getListOfUsers().stream()
-                .filter(u -> u.getEmail() != null)
-                .filter(u -> u.getEmail().equalsIgnoreCase(user.getEmail()))
-                .anyMatch(u -> !u.getId().equals(user.getId()));
+    public User getUserIfExists(Long userId) {
+        return userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
-
-
 }

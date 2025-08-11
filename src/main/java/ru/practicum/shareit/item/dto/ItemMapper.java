@@ -17,7 +17,7 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(ItemDto itemDto, User owner) {
+    public Item toItem(ItemDto itemDto, User owner) {
         Item item = new Item();
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());

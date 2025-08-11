@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -30,9 +29,7 @@ public class ItemController {
     @GetMapping("{id}")
     public ResponseEntity<ItemDto> getItemById(@PathVariable Long id) {
         log.info("Получен HTTP запрос на получение вещи по id: {}", id);
-        return itemService.getItemById(id)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new NotFoundException("Вещь с id = " + id + " не найдена"));
+        return ResponseEntity.ok(itemService.getItemById(id));
     }
 
     @PostMapping
