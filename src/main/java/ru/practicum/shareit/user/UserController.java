@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -27,9 +26,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUser(@PathVariable Long userId) {
         log.info("Получен HTTP запрос на получение пользователя по id: {}", userId);
-        return userService.getUser(userId)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найдена"));
+        return ResponseEntity.ok(userService.getUser(userId));
     }
 
     @PostMapping

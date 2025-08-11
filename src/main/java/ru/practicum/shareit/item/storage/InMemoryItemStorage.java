@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.storage;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
@@ -25,16 +24,16 @@ public class InMemoryItemStorage implements ItemStorage {
     @Override
     public Item createItem(Item item) {
         Long itemId = generateId();
-        item.setId(itemId); // присваиваем id объекту
+        item.setId(itemId);
         items.put(itemId, item);
         return item;
     }
 
     @Override
-    public Item updateItem(Item item, ItemDto itemDto) {
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(Boolean.TRUE.equals(itemDto.getAvailable()));
+    public Item updateItem(Item item, Item newItem) {
+        item.setName(newItem.getName());
+        item.setDescription(newItem.getDescription());
+        item.setAvailable(Boolean.TRUE.equals(newItem.getAvailable()));
         return item;
     }
 
@@ -45,11 +44,11 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Collection<Item> searchItem(String query, Long userId) {
+    public Collection<Item> searchItem(String query) {
         String lowerQuery = query.toLowerCase();
 
         return items.values().stream()
-                .filter(Item::isAvailable)
+                .filter(Item::getAvailable)
                 .filter(item -> {
                     String name = item.getName();
                     String desc = item.getDescription();

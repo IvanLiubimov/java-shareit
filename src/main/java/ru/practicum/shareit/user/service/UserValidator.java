@@ -19,13 +19,25 @@ public class UserValidator {
     }
 
     public void validateForPatch(User user) {
-        if (user.getName() != null && user.getName().isBlank()) {
-            throw new ConditionsNotMetException("Имя не может быть пустым");
+        boolean hasName = user.getName() != null;
+        boolean hasEmail = user.getEmail() != null;
+
+        if (!hasName && !hasEmail) {
+            throw new ConditionsNotMetException("Должно быть заполнено хотя бы одно поле: name или email");
         }
 
-        if (user.getEmail() != null) {
-            if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-                throw new ConditionsNotMetException("Имейл должен быть заполнен и содержать символ '@'");
+        if (hasName) {
+            if (user.getName().isBlank()) {
+                throw new ConditionsNotMetException("Имя не может быть пустым");
+            }
+        }
+
+        if (hasEmail) {
+            if (user.getEmail().isBlank()) {
+                throw new ConditionsNotMetException("Email не может быть пустым");
+            }
+            if (!user.getEmail().contains("@")) {
+                throw new ConditionsNotMetException("Email должен содержать символ '@'");
             }
         }
     }

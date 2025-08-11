@@ -2,8 +2,6 @@ package ru.practicum.shareit.user.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exceptions.ErrorHandler;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
@@ -23,9 +21,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User createUser(User user) {
-        if (isEmailExists(user.getEmail())) {
-            throw new ErrorHandler.ConflictException("Такой имейл уже есть у одного из пользователей");
-        }
         long userId = generateId();
         user.setId(userId);
         users.put(userId, user);
@@ -35,17 +30,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User newUser, Long id) {
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
-        }
 
         log.trace("Пользователь найден");
         User oldUser = users.get(id);
 
-        if (newUser.getEmail() != null) {
+        if (newUser.getEmail() != null && !newUser.getEmail().isBlank()) {
             oldUser.setEmail(newUser.getEmail());
         }
-        if (newUser.getName() != null) {
+        if (newUser.getName() != null && !newUser.getName().isBlank()) {
             oldUser.setName(newUser.getName());
         }
 
@@ -69,15 +61,16 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteUser(Long id) {
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
-        }
         users.remove(id);
     }
 
-    @Override
-    public boolean isEmailExists(String email) {
-        return users.values().stream()
-                .anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
+    public boolean isEmailExists(User user) {
+        if (user.getEmail() == null) {
+            return false;
+        }
+
+        return getListOfUsers().stream()
+                .filter(u -> !u.getId().equals(user.getId()))
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()));
     }
 }

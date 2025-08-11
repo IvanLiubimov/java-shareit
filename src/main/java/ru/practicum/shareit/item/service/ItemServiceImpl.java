@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,26 +23,23 @@ public class ItemServiceImpl implements ItemService {
     private final ItemMapper itemMapper;
 
     public Collection<ItemDto> getAllItems(Long userId) {
-        inMemoryUserStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-
+        getUserIfExists(userId);
         return inMemoryItemStorage.getListOfItems(userId).stream()
                 .map(itemMapper::toItemDto)
                 .toList();
     }
 
     @Override
-    public Optional<ItemDto> getItemById(Long id) {
-        return inMemoryItemStorage.getItemById(id)
-                .map(itemMapper::toItemDto);
+    public ItemDto getItemById(Long id) {
+        Item item = getItemIfExists(id);
+        return itemMapper.toItemDto(item);
     }
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Long userId) {
-        User owner = inMemoryUserStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+        User owner = getUserIfExists(userId);
 
-        itemValidator.validate(itemDto, userId);
+        itemValidator.validate(itemDto);
 
         Item item = itemMapper.toItem(itemDto, owner);
         Item createdItem = inMemoryItemStorage.createItem(item);
@@ -51,34 +47,44 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public ItemDto editItem(Long itemId, ItemDto itemDto, Long userId) {
-        itemValidator.validateForUpdate(itemId, itemDto, userId);
+        itemValidator.validateForUpdate(itemDto);
 
-        inMemoryUserStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+        getUserIfExists(userId);
+        Item item = getItemIfExists(itemId);
 
-        Item item = inMemoryItemStorage.getItemById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена"));
-        if (item == null || !item.getOwner().getId().equals(userId)) {
+        if (!item.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Вещь с id = " + itemDto.getId() + " не найдена или не принадлежит пользователю");
         }
-        if (itemDto.getName() != null) {
+        if (itemDto.getName() != null && itemDto.getName().isBlank()) {
             item.setName(itemDto.getName());
         }
-        if (itemDto.getDescription() != null) {
+        if (itemDto.getDescription() != null && itemDto.getDescription().isBlank()) {
             item.setDescription(itemDto.getDescription());
         }
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        Item updatedItem = inMemoryItemStorage.updateItem(item, itemDto);
+        Item newItem = itemMapper.toItem(itemDto, item.getOwner());
+        Item updatedItem = inMemoryItemStorage.updateItem(item, newItem);
 
         return itemMapper.toItemDto(updatedItem);
     }
 
     public Collection<ItemDto> searchItems(String query, Long userId) {
-        return inMemoryItemStorage.searchItem(query, userId).stream()
+        getUserIfExists(userId);
+        return inMemoryItemStorage.searchItem(query).stream()
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
+    }
+
+    public User getUserIfExists(Long userId) {
+        return inMemoryUserStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+    }
+
+    public Item getItemIfExists(Long itemId) {
+        return inMemoryItemStorage.getItemById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена"));
     }
 
 }
