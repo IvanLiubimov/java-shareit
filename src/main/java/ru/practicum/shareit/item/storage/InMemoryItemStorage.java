@@ -39,7 +39,7 @@ public class InMemoryItemStorage implements ItemStorage {
         }
         if (newItem.getAvailable() != null) {
             item.setAvailable(newItem.getAvailable());
-        };
+        }
         return item;
     }
 
