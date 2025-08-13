@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
         userStorage.deleteUser(id);
     }
 
-    public User getUserIfExists(Long userId) {
+    private User getUserIfExists(Long userId) {
         return userStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }

@@ -29,12 +29,6 @@ public class ItemValidator {
         boolean hasAvailable = itemDto.getAvailable() != null;
 
         if (!hasValidName && !hasValidDescription && !hasAvailable) {
-            if (itemDto.getName() != null && itemDto.getName().isBlank()) {
-                throw new ConditionsNotMetException("Имя не может быть пустым");
-            }
-            if (itemDto.getDescription() != null && itemDto.getDescription().isBlank()) {
-                throw new ConditionsNotMetException("Описание не может быть пустым");
-            }
             throw new ConditionsNotMetException("Нужно указать хотя бы одно поле для обновления");
         }
     }

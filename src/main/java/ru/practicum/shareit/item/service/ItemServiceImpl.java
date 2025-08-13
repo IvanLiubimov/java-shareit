@@ -48,22 +48,13 @@ public class ItemServiceImpl implements ItemService {
 
     public ItemDto editItem(Long itemId, ItemDto itemDto, Long userId) {
         itemValidator.validateForUpdate(itemDto);
-
         getUserIfExists(userId);
         Item item = getItemIfExists(itemId);
 
         if (!item.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Вещь с id = " + itemDto.getId() + " не найдена или не принадлежит пользователю");
         }
-        if (itemDto.getName() != null && itemDto.getName().isBlank()) {
-            item.setName(itemDto.getName());
-        }
-        if (itemDto.getDescription() != null && itemDto.getDescription().isBlank()) {
-            item.setDescription(itemDto.getDescription());
-        }
-        if (itemDto.getAvailable() != null) {
-            item.setAvailable(itemDto.getAvailable());
-        }
+
         Item newItem = itemMapper.toItem(itemDto, item.getOwner());
         Item updatedItem = inMemoryItemStorage.updateItem(item, newItem);
 
@@ -77,12 +68,12 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    public User getUserIfExists(Long userId) {
+    private User getUserIfExists(Long userId) {
         return inMemoryUserStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
 
-    public Item getItemIfExists(Long itemId) {
+    private Item getItemIfExists(Long itemId) {
         return inMemoryItemStorage.getItemById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена"));
     }
