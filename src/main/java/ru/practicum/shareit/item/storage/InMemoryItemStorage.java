@@ -31,9 +31,15 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public Item updateItem(Item item, Item newItem) {
-        item.setName(newItem.getName());
-        item.setDescription(newItem.getDescription());
-        item.setAvailable(Boolean.TRUE.equals(newItem.getAvailable()));
+        if (newItem.getName() != null && !newItem.getName().isBlank()) {
+            item.setName(newItem.getName());
+        }
+        if (newItem.getDescription() != null && !newItem.getDescription().isBlank()) {
+            item.setDescription(newItem.getDescription());
+        }
+        if (newItem.getAvailable() != null) {
+            item.setAvailable(newItem.getAvailable());
+        };
         return item;
     }
 
