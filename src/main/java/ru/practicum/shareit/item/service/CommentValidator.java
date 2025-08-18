@@ -10,7 +10,7 @@ import ru.practicum.shareit.item.model.Comment;
 @RequiredArgsConstructor
 public class CommentValidator {
 
-    public void validate (Comment comment) {
+    public void validate(Comment comment) {
         if (comment.getText() == null || comment.getText().isBlank()) {
             throw new ConditionsNotMetException("Описание комментария не может быть пустым");
         }
