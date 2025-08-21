@@ -1,25 +1,26 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.ErrorHandler;
+import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
     private final UserValidator userValidator;
 
     @Override
     public Collection<UserDto> getListOfUsers() {
-        Collection<User> users = userStorage.getListOfUsers();
+        Collection<User> users = userRepository.findAll();
         return users.stream().map(UserMapper::toUserDto).toList();
     }
 
@@ -32,34 +33,37 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        if (userStorage.isEmailExists(user)) {
-            throw new ErrorHandler.ConflictException("Email уже используется другим пользователем");
-        }
         userValidator.validate(user);
-        User createdUser = userStorage.createUser(user);
-        return UserMapper.toUserDto(createdUser);
+        try {
+            User savedUser = userRepository.save(user);
+            return UserMapper.toUserDto(savedUser);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Пользователь с email " + userDto.getEmail() + " уже существует");
+        }
     }
 
     @Override
     public UserDto editUser(UserDto newUserDto, Long id) {
         User newUser = UserMapper.toUser(newUserDto);
-        getUserIfExists(id);
-        if (newUser.getEmail() != null && userStorage.isEmailExists(newUser)) {
-            throw new ErrorHandler.ConflictException("Email уже используется другим пользователем");
-        }
+        User oldUser = getUserIfExists(id);
         userValidator.validateForPatch(newUser);
-        User updatedUser = userStorage.updateUser(newUser, id);
-        return UserMapper.toUserDto(updatedUser);
+        try {
+            UserMapper.updateUserFromDto(newUserDto, oldUser);
+            User updatedUser = userRepository.save(oldUser);
+            return UserMapper.toUserDto(updatedUser);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Пользователь с email " + newUserDto.getEmail() + " уже существует");
+        }
     }
 
     @Override
     public void deleteUser(Long id) {
         getUserIfExists(id);
-        userStorage.deleteUser(id);
+        userRepository.deleteById(id);
     }
 
     private User getUserIfExists(Long userId) {
-        return userStorage.getUserById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
 }
