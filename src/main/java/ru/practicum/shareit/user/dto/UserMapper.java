@@ -23,4 +23,13 @@ public class UserMapper {
                 userDto.getEmail()
         );
     }
+
+    public static void updateUserFromDto(UserDto newUserDto, User oldUser) {
+        if (newUserDto.getEmail() != null && !newUserDto.getEmail().isBlank()) {
+            oldUser.setEmail(newUserDto.getEmail());
+        }
+        if (newUserDto.getName() != null && !newUserDto.getName().isBlank()) {
+            oldUser.setName(newUserDto.getName());
+        }
+    }
 }

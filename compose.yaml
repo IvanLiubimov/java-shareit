@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16.1
+    container_name: shareit-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=shareit
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=12345
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U dbuser -d shareit
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

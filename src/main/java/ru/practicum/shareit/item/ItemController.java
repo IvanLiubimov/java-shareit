@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoAll;
 import ru.practicum.shareit.item.service.ItemService;
 
 
@@ -19,7 +21,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public Collection<ItemDto> getAllItems(
+    public Collection<ItemDtoAll> getAllItems(
             @RequestHeader ("X-Sharer-User-Id") Long userId
     ) {
         log.info("Получен HTTP запрос вывод списка вещей");
@@ -27,9 +29,10 @@ public class ItemController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<ItemDto> getItemById(@PathVariable Long id) {
+    public ResponseEntity<ItemDtoAll> getItemById(@PathVariable Long id,
+                                                  @RequestHeader ("X-Sharer-User-Id") Long userId) {
         log.info("Получен HTTP запрос на получение вещи по id: {}", id);
-        return ResponseEntity.ok(itemService.getItemById(id));
+        return ResponseEntity.ok(itemService.getItemById(id, userId));
     }
 
     @PostMapping
@@ -62,7 +65,12 @@ public class ItemController {
         return itemService.searchItems(text, userId);
     }
 
-
-
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@PathVariable Long itemId,
+                                 @RequestHeader ("X-Sharer-User-Id") Long userId,
+                                 @RequestBody CommentDto comment) {
+        log.info("Получен HTTP запрос на добавление комментария");
+        return itemService.addComment(itemId, userId, comment);
+    }
 }
 
