@@ -13,7 +13,7 @@ import java.util.Collection;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b " +
-            "WHERE b.booker.id = :ownerId " +
+            "WHERE b.booker.id = :CurrentUserId " +
             "AND (:state = 'ALL' " +
             "OR (:state = 'CURRENT' AND b.start <= CURRENT_TIMESTAMP AND b.end >= CURRENT_TIMESTAMP) " +
             "OR (:state = 'PAST' AND b.end < CURRENT_TIMESTAMP) " +
@@ -22,7 +22,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "OR (:state = 'REJECTED' AND b.status = ru.practicum.shareit.booking.model.Status.REJECTED)) " +
             "ORDER BY b.start DESC")
     Collection<Booking> findAll(@Param("state") String state,
-                                @Param("ownerId") Long userId);
+                                @Param("CurrentUserId") Long userId);
 
     @Query("SELECT b FROM Booking b " +
             "JOIN b.item i " +

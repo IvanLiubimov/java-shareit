@@ -128,10 +128,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public CommentDto addComment(Long itemId, Long userId, CommentDto commentDto) {
+
+        commentValidator.validate(commentDto);
         Item item = getItemIfExists(itemId);
         User user = getUserIfExists(userId);
-
-
 
         boolean isUserBookedItem = bookingRepository.existsByItemIdAndBookerIdAndEndBefore(
                 itemId,
@@ -147,7 +147,6 @@ public class ItemServiceImpl implements ItemService {
 
         Comment comment = commentMapper.toComment(commentDto, item, user);
 
-        commentValidator.validate(comment);
         return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 

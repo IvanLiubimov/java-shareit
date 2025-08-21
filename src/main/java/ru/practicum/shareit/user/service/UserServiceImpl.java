@@ -1,7 +1,9 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.ErrorHandler;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -32,25 +34,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        if (isEmailExists(user)) {
-            throw new ErrorHandler.ConflictException("Email уже используется другим пользователем");
-        }
         userValidator.validate(user);
-        User createdUser = userRepository.save(user);
-        return UserMapper.toUserDto(createdUser);
+        try {
+            userRepository.save(user);
+            return UserMapper.toUserDto(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Пользователь с email " + userDto.getEmail() + " уже существует");
+        }
     }
 
     @Override
     public UserDto editUser(UserDto newUserDto, Long id) {
         User newUser = UserMapper.toUser(newUserDto);
         User oldUser = getUserIfExists(id);
-        if (newUser.getEmail() != null && isEmailExists(newUser)) {
-            throw new ErrorHandler.ConflictException("Email уже используется другим пользователем");
+        try {
+            userValidator.validateForPatch(newUser);
+            UserMapper.updateUserFromDto(newUserDto, oldUser);
+            User updatedUser = userRepository.save(oldUser);
+            return UserMapper.toUserDto(updatedUser);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Пользователь с email " + newUserDto.getEmail() + " уже существует");
         }
-        userValidator.validateForPatch(newUser);
-        UserMapper.updateUserFromDto(newUserDto, oldUser);
-        User updatedUser = userRepository.save(oldUser);
-        return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
@@ -62,15 +66,5 @@ public class UserServiceImpl implements UserService {
     private User getUserIfExists(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-    }
-
-    private boolean isEmailExists(User user) {
-        if (user.getEmail() == null) {
-            return false;
-        }
-
-        return userRepository.findAll().stream()
-                .filter(u -> !u.getId().equals(user.getId()))
-                .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()));
     }
 }
