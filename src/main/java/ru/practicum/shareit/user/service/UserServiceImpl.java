@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ConflictException;
-import ru.practicum.shareit.exceptions.ErrorHandler;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
@@ -36,8 +35,8 @@ public class UserServiceImpl implements UserService {
         User user = UserMapper.toUser(userDto);
         userValidator.validate(user);
         try {
-            userRepository.save(user);
-            return UserMapper.toUserDto(user);
+            User savedUser = userRepository.save(user);
+            return UserMapper.toUserDto(savedUser);
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("Пользователь с email " + userDto.getEmail() + " уже существует");
         }
@@ -47,8 +46,8 @@ public class UserServiceImpl implements UserService {
     public UserDto editUser(UserDto newUserDto, Long id) {
         User newUser = UserMapper.toUser(newUserDto);
         User oldUser = getUserIfExists(id);
+        userValidator.validateForPatch(newUser);
         try {
-            userValidator.validateForPatch(newUser);
             UserMapper.updateUserFromDto(newUserDto, oldUser);
             User updatedUser = userRepository.save(oldUser);
             return UserMapper.toUserDto(updatedUser);
