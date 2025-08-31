@@ -6,9 +6,16 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - server
+      server:
+        condition: service_healthy  # ← Ждем пока server станет healthy
     environment:
       - SHAREIT_SERVER_URL=http://server:9090
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
 
   server:
     build: server
@@ -17,11 +24,18 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # ← Ждем пока БД станет healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
       - SPRING_DATASOURCE_USERNAME=shareit
       - SPRING_DATASOURCE_PASSWORD=shareit
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
 
   db:
     image: postgres:16.1
