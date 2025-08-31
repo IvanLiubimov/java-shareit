@@ -47,13 +47,13 @@ public class ItemRequestServiceTests {
         List<Item> items = new ArrayList<>();
         List<ItemDtoToRequest> emptyDtoList = Collections.emptyList();
         ItemRequestDto itemRequestDto = new ItemRequestDto(3L, "Нужна дрель",
-                LocalDateTime.of(2025, Month.AUGUST, 15, 12, 5) , null);
+                LocalDateTime.of(2025, Month.AUGUST, 15, 12, 5), null);
         ItemRequest itemRequest = new ItemRequest(3L, "Нужна дрель",
                 user,
                 itemRequestDto.getDateTime().atZone(ZoneId.systemDefault()).toInstant(),
                 items);
         ItemRequestDto expectedDto = new ItemRequestDto(3L, "Нужна дрель",
-                LocalDateTime.of(2025, Month.AUGUST, 15, 12, 5) , Collections.emptyList());
+                LocalDateTime.of(2025, Month.AUGUST, 15, 12, 5), Collections.emptyList());
 
 
         Mockito.when(userRepository.findById(3L)).thenReturn(Optional.of(user));
@@ -93,9 +93,9 @@ public class ItemRequestServiceTests {
         itemDtoToRequests2.add(itemDtoToRequest3);
 
         ItemRequestDto itemRequestDto1 = new ItemRequestDto(3L, "Нужна дрель",
-                LocalDateTime.of(2025, Month.AUGUST, 15, 12, 5) , itemDtoToRequests1);
+                LocalDateTime.of(2025, Month.AUGUST, 15, 12, 5), itemDtoToRequests1);
         ItemRequestDto itemRequestDto2 = new ItemRequestDto(4L, "Нужен скотч",
-                LocalDateTime.of(2025, Month.AUGUST, 12, 17, 40) , itemDtoToRequests2);
+                LocalDateTime.of(2025, Month.AUGUST, 12, 17, 40), itemDtoToRequests2);
         ItemRequest itemRequest1 = new ItemRequest(3L, "Нужна дрель",
                 user1,
                 itemRequestDto1.getDateTime().atZone(ZoneId.systemDefault()).toInstant(),

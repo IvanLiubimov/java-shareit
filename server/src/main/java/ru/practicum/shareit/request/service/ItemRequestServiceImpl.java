@@ -34,12 +34,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User user = getUserIfExists(userId);
         ItemRequest itemRequest = itemRequestMapper.toItemRequest(itemRequestDto, user);
         ItemRequest createdItemRequest = itemRequestRepository.save(itemRequest);
-        List<ItemDtoToRequest> ListOfItemDtoToRequest = Optional.ofNullable(createdItemRequest.getItemsList())
+        List<ItemDtoToRequest> listOfItemDtoToRequest = Optional.ofNullable(createdItemRequest.getItemsList())
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(itemMapper::toItemDtoToRequest)
                 .toList();
-        return itemRequestMapper.toItemRequestDto(createdItemRequest, ListOfItemDtoToRequest);
+        return itemRequestMapper.toItemRequestDto(createdItemRequest, listOfItemDtoToRequest);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена"));
     }
 
-    private Collection<ItemRequestDto> convertRequestListToDto (Collection<ItemRequest> itemRequests) {
+    private Collection<ItemRequestDto> convertRequestListToDto(Collection<ItemRequest> itemRequests) {
         return itemRequests.stream()
                 .map(itemRequest -> itemRequestMapper.toItemRequestDto(
                         itemRequest,

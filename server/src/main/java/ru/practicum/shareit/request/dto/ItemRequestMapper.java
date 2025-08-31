@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class ItemRequestMapper {
 
-    public ItemRequest toItemRequest (ItemRequestDto itemRequestDto, User requestor) {
+    public ItemRequest toItemRequest(ItemRequestDto itemRequestDto, User requestor) {
         ItemRequest itemRequest = new ItemRequest();
         itemRequest.setId(itemRequestDto.getId());
         itemRequest.setDescription(itemRequestDto.getDescription());
@@ -22,7 +22,7 @@ public class ItemRequestMapper {
         return itemRequest;
     }
 
-    public ItemRequestDto toItemRequestDto (ItemRequest itemRequest, List<ItemDtoToRequest> listOfItems) {
+    public ItemRequestDto toItemRequestDto(ItemRequest itemRequest, List<ItemDtoToRequest> listOfItems) {
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
@@ -30,7 +30,7 @@ public class ItemRequestMapper {
                 .build();
     }
 
-    private LocalDateTime convertToLocalDateTime (Instant instant) {
+    private LocalDateTime convertToLocalDateTime(Instant instant) {
         return instant != null
                 ? LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
                 : null;
