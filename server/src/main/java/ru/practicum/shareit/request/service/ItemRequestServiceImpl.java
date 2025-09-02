@@ -44,11 +44,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public Collection<ItemRequestDto> getAllItemRequestsOfUser(Long userId) {
-        User user = getUserIfExists(userId);
+        getUserIfExists(userId);
         Collection<ItemRequest> itemRequestsOfUser = itemRequestRepository.findAllRequestsByUserId(userId);
-        itemRequestsOfUser.stream().toList();
         return convertRequestListToDto(itemRequestsOfUser);
-
     }
 
     @Override

@@ -44,10 +44,12 @@ public class BookingController {
     }
 
     @GetMapping
-    public Collection<BookingDto> getAllBookings(@RequestParam (defaultValue = "ALL") String state,
-                                                 @RequestHeader("X-Sharer-User-Id") Long userId,
-                                                 @RequestParam(name = "from") Integer from,
-                                                 @RequestParam(name = "size") Integer size) {
+    public Collection<BookingDto> getAllBookings(
+            @RequestParam(defaultValue = "ALL") String state,
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @RequestParam(name = "from", defaultValue = "0") Integer from,
+            @RequestParam(name = "size", defaultValue = "10") Integer size) {
+
         log.info("Получен HTTP запрос на получение всех бронирований");
         return bookingService.getAllBookings(state, userId, from, size);
     }
