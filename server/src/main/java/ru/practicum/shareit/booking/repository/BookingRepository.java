@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,16 +15,16 @@ import java.util.Collection;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b " +
-            "WHERE b.booker.id = :CurrentUserId " +
+            "WHERE b.booker.id = :userId " +
             "AND (:state = 'ALL' " +
             "OR (:state = 'CURRENT' AND b.start <= CURRENT_TIMESTAMP AND b.end >= CURRENT_TIMESTAMP) " +
             "OR (:state = 'PAST' AND b.end < CURRENT_TIMESTAMP) " +
             "OR (:state = 'FUTURE' AND b.start > CURRENT_TIMESTAMP) " +
-            "OR (:state = 'WAITING' AND b.status = ru.practicum.shareit.booking.model.Status.WAITING) " +
-            "OR (:state = 'REJECTED' AND b.status = ru.practicum.shareit.booking.model.Status.REJECTED)) " +
-            "ORDER BY b.start DESC")
-    Collection<Booking> findAll(@Param("state") String state,
-                                @Param("CurrentUserId") Long userId);
+            "OR (:state = 'WAITING' AND b.status = 'WAITING') " +
+            "OR (:state = 'REJECTED' AND b.status = 'REJECTED'))")
+    Page<Booking> findAll(@Param("state") String state,
+                                            @Param("userId") Long userId,
+                                            Pageable pageable);
 
     @Query("SELECT b FROM Booking b " +
             "JOIN b.item i " +

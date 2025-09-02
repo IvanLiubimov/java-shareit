@@ -27,6 +27,7 @@ public class ItemRequestMapper {
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
                 .itemsList(listOfItems)
+                .dateTime(convertToLocalDateTime(itemRequest.getCreated()))
                 .build();
     }
 

@@ -30,7 +30,6 @@ public class CommentMapper {
                 .build();
     }
 
-    // Вспомогательный метод для конвертации Instant -> LocalDateTime
     private LocalDateTime convertToLocalDateTime(Instant instant) {
         return instant != null
                 ? LocalDateTime.ofInstant(instant, ZoneId.systemDefault())

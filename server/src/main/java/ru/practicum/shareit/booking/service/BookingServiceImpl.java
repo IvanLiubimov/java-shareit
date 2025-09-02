@@ -1,6 +1,11 @@
 package ru.practicum.shareit.booking.service;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -87,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDto> getAllBookings(String state, Long userId) {
+    public Collection<BookingDto> getAllBookings(String state, Long userId, Integer from, Integer size) {
         getUserIfExists(userId);
         try {
             BookingState.valueOf(state.toUpperCase());
@@ -95,7 +100,11 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("Неверный статус для поиска " + state);
         }
 
-        return bookingRepository.findAll(state, userId)
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
+
+        Page<Booking> bookings = bookingRepository.findAll(state, userId, pageable);
+
+        return  bookings.getContent()
                 .stream()
                 .map(booking -> bookingMapper.toBookingDto(booking, itemMapper.toItemDto(booking.getItem())))
                 .collect(Collectors.toList());

@@ -21,6 +21,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.*;
 import java.util.*;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
@@ -177,31 +179,29 @@ public class ItemRequestServiceTests {
         items1.add(item2);
         items2.add(item3);
 
-        List<ItemRequest> allItemRequest = List.of(itemRequest1, itemRequest2);
+        List<ItemRequest> allItemRequest = List.of(itemRequest2);
 
-        Mockito.when(itemRequestRepository.findAll()).thenReturn(allItemRequest);
-        Mockito.when(itemMapper.toItemDtoToRequest(item1)).thenReturn(itemDtoToRequest1);
-        Mockito.when(itemMapper.toItemDtoToRequest(item2)).thenReturn(itemDtoToRequest2);
+        Mockito.when(itemRequestRepository.findAll(anyLong())).thenReturn(allItemRequest);
+        Mockito.when(itemMapper.toItemDtoToRequest(any(Item.class)))
+                .thenReturn(itemDtoToRequest1)
+                .thenReturn(itemDtoToRequest2)
+                .thenReturn(itemDtoToRequest3);
         Mockito.when(itemMapper.toItemDtoToRequest(item3)).thenReturn(itemDtoToRequest3);
-        Mockito.when(itemRequestMapper.toItemRequestDto(Mockito.eq(itemRequest1), Mockito.anyList()))
-                .thenReturn(itemRequestDto1);
         Mockito.when(itemRequestMapper.toItemRequestDto(Mockito.eq(itemRequest2), Mockito.anyList()))
                 .thenReturn(itemRequestDto2);
 
-        Collection<ItemRequestDto> result = itemRequestService.getAllItemRequests();
+        Collection<ItemRequestDto> result = itemRequestService.getAllItemRequests(user1.getId());
 
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals(1, result.size());
 
         List<ItemRequestDto> resultList = new ArrayList<>(result);
-        Assertions.assertTrue(resultList.contains(itemRequestDto1));
+        Assertions.assertFalse(resultList.contains(itemRequestDto1));
         Assertions.assertTrue(resultList.contains(itemRequestDto2));
 
-        Mockito.verify(itemRequestRepository, times(1)).findAll();
-        Mockito.verify(itemMapper, times(1)).toItemDtoToRequest(item1);
-        Mockito.verify(itemMapper, times(1)).toItemDtoToRequest(item2);
-        Mockito.verify(itemMapper, times(1)).toItemDtoToRequest(item3);
-        Mockito.verify(itemRequestMapper, times(1)).toItemRequestDto(Mockito.eq(itemRequest1), Mockito.anyList());
+        Mockito.verify(itemRequestRepository, times(1)).findAll(anyLong());
+        Mockito.verify(itemMapper, times(1)).toItemDtoToRequest(any(Item.class));
+        Mockito.verify(itemRequestMapper, times(0)).toItemRequestDto(Mockito.eq(itemRequest1), Mockito.anyList());
         Mockito.verify(itemRequestMapper, times(1)).toItemRequestDto(Mockito.eq(itemRequest2), Mockito.anyList());
     }
 

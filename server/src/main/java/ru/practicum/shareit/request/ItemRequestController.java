@@ -34,9 +34,9 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public Collection<ItemRequestDto> getAllItemRequests() {
+    public Collection<ItemRequestDto> getAllItemRequests(@RequestHeader ("X-Sharer-User-Id") Long userId) {
         log.info("Получен запрос на получение всех запросов вещей пользователя");
-        return itemRequestService.getAllItemRequests();
+        return itemRequestService.getAllItemRequests(userId);
     }
 
     @GetMapping("/{requestId}")
