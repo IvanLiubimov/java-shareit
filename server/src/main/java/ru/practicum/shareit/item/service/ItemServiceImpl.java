@@ -17,7 +17,7 @@ import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.awt.print.Pageable;
+
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
