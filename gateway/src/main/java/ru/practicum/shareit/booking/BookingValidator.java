@@ -5,10 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-
 @Component
 @RequiredArgsConstructor
 public class BookingValidator {
